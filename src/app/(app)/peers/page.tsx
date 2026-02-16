@@ -17,8 +17,8 @@ import {
   X,
   Send,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { getInitials } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
+import { invitePeerByEmail } from "./actions";
 
 const ENCOURAGEMENTS = [
   { type: "mashaallah", label: "MashaAllah!", icon: Sparkles },
@@ -33,6 +33,7 @@ export default function PeersPage() {
   const ramadan = getRamadanInfo();
 
   const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteStatus, setInviteStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   // Fetch peer connections
   const { data: connections } = useQuery({
@@ -53,7 +54,28 @@ export default function PeersPage() {
     enabled: !!user,
   });
 
-  const acceptedConnections = connections?.filter((c) => c.status === "accepted") ?? [];
+  // Invite mutation
+  const invitePeer = useMutation({
+    mutationFn: async (email: string) => {
+      setInviteStatus(null);
+      const result = await invitePeerByEmail(email);
+      if (result.error) {
+        throw new Error(result.error);
+      }
+    },
+    onSuccess: () => {
+      setInviteEmail("");
+      setInviteStatus({ type: "success", message: "Invitation sent!" });
+      queryClient.invalidateQueries({ queryKey: ["peer-connections"] });
+    },
+    onError: (error: Error) => {
+      setInviteStatus({ type: "error", message: error.message });
+    },
+  });
+
+  const acceptedConnections = connections?.filter(
+    (c) => c.status === "accepted"
+  ) ?? [];
   const pendingReceived = connections?.filter(
     (c) => c.status === "pending" && c.peer_id === user?.id
   ) ?? [];
@@ -128,11 +150,29 @@ export default function PeersPage() {
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
             />
           </div>
-          <button className="bg-navy dark:bg-gold text-cream-light dark:text-navy px-5 py-2.5 rounded-xl font-semibold hover:opacity-90 flex items-center gap-1.5 shrink-0">
-            <Send className="h-4 w-4" />
+          <button
+            onClick={() => {
+              if (inviteEmail.trim()) invitePeer.mutate(inviteEmail);
+            }}
+            disabled={invitePeer.isPending || !inviteEmail.trim()}
+            className="bg-navy dark:bg-gold text-cream-light dark:text-navy px-5 py-2.5 rounded-xl font-semibold hover:opacity-90 flex items-center gap-1.5 shrink-0 disabled:opacity-50"
+          >
+            {invitePeer.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
             Invite
           </button>
         </div>
+        {inviteStatus && (
+          <p className={cn(
+            "mt-2 text-sm font-medium",
+            inviteStatus.type === "success" ? "text-emerald-500" : "text-destructive"
+          )}>
+            {inviteStatus.message}
+          </p>
+        )}
       </div>
 
       {/* Pending requests */}

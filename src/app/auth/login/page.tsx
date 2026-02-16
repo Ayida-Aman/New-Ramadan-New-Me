@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Moon, Mail, Lock, Loader2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Moon, Mail, Lock, Loader2, CheckCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
@@ -12,6 +12,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const verified = searchParams.get("verified") === "true";
   const supabase = createClient();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -53,6 +55,13 @@ export default function LoginPage() {
           <h2 className="text-2xl font-bold text-navy dark:text-cream-light mb-6">
             Sign In
           </h2>
+
+          {verified && (
+            <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-sm flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 shrink-0" />
+              Email verified! You can now sign in.
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 p-3 rounded-xl bg-destructive/10 text-destructive text-sm">

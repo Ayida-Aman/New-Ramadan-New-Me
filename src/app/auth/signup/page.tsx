@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Moon, Mail, Lock, User, Loader2 } from "lucide-react";
+import { Moon, Mail, Lock, User, Loader2, CheckCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SignupPage() {
@@ -12,7 +11,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [emailSent, setEmailSent] = useState(false);
   const supabase = createClient();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -37,8 +36,8 @@ export default function SignupPage() {
       return;
     }
 
-    router.push("/dashboard");
-    router.refresh();
+    setEmailSent(true);
+    setLoading(false);
   }
 
   return (
@@ -57,11 +56,32 @@ export default function SignupPage() {
 
         {/* Card */}
         <div className="bg-card rounded-2xl border border-border/50 p-8 shadow-sm">
-          <h2 className="text-2xl font-bold text-navy dark:text-cream-light mb-6">
-            Create Account
-          </h2>
+          {emailSent ? (
+            <div className="text-center py-4">
+              <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-navy dark:text-cream-light mb-2">
+                Check Your Email
+              </h2>
+              <p className="text-muted mb-4">
+                We&apos;ve sent a verification link to <strong className="text-foreground">{email}</strong>
+              </p>
+              <p className="text-sm text-muted mb-6">
+                Please click the link in your email to verify your account, then you can sign in.
+              </p>
+              <Link
+                href="/auth/login"
+                className="inline-block bg-navy dark:bg-gold text-cream-light dark:text-navy px-6 py-2.5 rounded-xl font-semibold hover:opacity-90 transition-opacity"
+              >
+                Go to Sign In
+              </Link>
+            </div>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold text-navy dark:text-cream-light mb-6">
+                Create Account
+              </h2>
 
-          {error && (
+              {error && (
             <div className="mb-4 p-3 rounded-xl bg-destructive/10 text-destructive text-sm">
               {error}
             </div>
@@ -135,15 +155,17 @@ export default function SignupPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-muted">
-            Already have an account?{" "}
-            <Link
-              href="/auth/login"
-              className="text-gold font-medium hover:underline"
-            >
-              Sign in
-            </Link>
-          </div>
+              <div className="mt-6 text-center text-sm text-muted">
+                Already have an account?{" "}
+                <Link
+                  href="/auth/login"
+                  className="text-gold font-medium hover:underline"
+                >
+                  Sign in
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

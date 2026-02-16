@@ -33,6 +33,7 @@ export default function JournalPage() {
 
   const [content, setContent] = useState("");
   const [mood, setMood] = useState<MoodType | null>(null);
+  const [saved, setSaved] = useState(false);
 
   const prompt = PROMPTS_BY_WEEK[ramadan.weekNumber] ?? PROMPTS_BY_WEEK[1];
 
@@ -82,6 +83,7 @@ export default function JournalPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reflections"] });
+      setSaved(true);
     },
   });
 
@@ -157,6 +159,23 @@ export default function JournalPage() {
             </>
           )}
         </button>
+
+        {/* Show saved confirmation */}
+        {(saved || todayReflection) && content.trim() && (
+          <div className="mt-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+            <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-2">
+              ✓ Today&apos;s reflection saved
+            </p>
+            <div className="text-sm text-foreground">
+              {mood && (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-muted mb-1">
+                  Feeling: {MOODS.find((m) => m.value === mood)?.label}
+                </span>
+              )}
+              <p className="line-clamp-3">{content}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Timeline */}
