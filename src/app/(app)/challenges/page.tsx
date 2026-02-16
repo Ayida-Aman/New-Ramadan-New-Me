@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useUser } from "@/providers/supabase-provider";
@@ -42,15 +43,17 @@ export default function ChallengesPage() {
   const completeChallenge = useMutation({
     mutationFn: async (challengeId: string) => {
       if (!user) throw new Error("Not auth");
-      const { error } = await supabase.from("user_challenge_completions").insert({
-        user_id: user.id,
-        challenge_id: challengeId,
-        ramadan_year: ramadan.year,
-      });
+      const { error } = await supabase
+        .from("user_challenge_completions")
+        .insert({
+          user_id: user.id,
+          challenge_id: challengeId,
+          ramadan_year: ramadan.year,
+        } as any);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["challenge-completions"] });
+      queryClient.invalidateQueries({ queryKey: ["challenge-completions", user?.id] });
     },
   });
 

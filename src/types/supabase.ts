@@ -96,6 +96,7 @@ export interface Database {
           preferred_lang?: "en" | "ar";
           onboarded?: boolean;
         };
+        Relationships: [];
       };
       weekly_themes: {
         Row: {
@@ -129,6 +130,7 @@ export interface Database {
           gradient_to?: string;
           icon?: string;
         };
+        Relationships: [];
       };
       daily_challenges: {
         Row: {
@@ -161,6 +163,7 @@ export interface Database {
           icon?: string;
           points?: number;
         };
+        Relationships: [];
       };
       quran_goals: {
         Row: {
@@ -192,6 +195,7 @@ export interface Database {
           prayer_distribution?: PrayerDistribution;
           is_active?: boolean;
         };
+        Relationships: [];
       };
       reading_logs: {
         Row: {
@@ -218,6 +222,7 @@ export interface Database {
           prayers_completed?: PrayersCompleted;
           notes?: string;
         };
+        Relationships: [];
       };
       peer_connections: {
         Row: {
@@ -241,6 +246,7 @@ export interface Database {
           status?: PeerStatus;
           message?: string;
         };
+        Relationships: [];
       };
       user_challenge_completions: {
         Row: {
@@ -260,6 +266,7 @@ export interface Database {
         Update: {
           notes?: string;
         };
+        Relationships: [];
       };
       reflections: {
         Row: {
@@ -289,6 +296,7 @@ export interface Database {
           mood?: MoodType | null;
           is_private?: boolean;
         };
+        Relationships: [];
       };
       community_posts: {
         Row: {
@@ -312,6 +320,7 @@ export interface Database {
           post_type?: PostType;
           is_featured?: boolean;
         };
+        Relationships: [];
       };
       post_likes: {
         Row: {
@@ -325,6 +334,7 @@ export interface Database {
           user_id: string;
         };
         Update: never;
+        Relationships: [];
       };
       post_comments: {
         Row: {
@@ -342,6 +352,7 @@ export interface Database {
         Update: {
           content?: string;
         };
+        Relationships: [];
       };
       badges: {
         Row: {
@@ -372,6 +383,7 @@ export interface Database {
           category?: BadgeCategory;
           requirement?: Json;
         };
+        Relationships: [];
       };
       user_badges: {
         Row: {
@@ -385,6 +397,7 @@ export interface Database {
           badge_id: string;
         };
         Update: never;
+        Relationships: [];
       };
       notifications: {
         Row: {
@@ -407,6 +420,7 @@ export interface Database {
         Update: {
           is_read?: boolean;
         };
+        Relationships: [];
       };
       peer_encouragements: {
         Row: {
@@ -426,8 +440,10 @@ export interface Database {
           custom_message?: string;
         };
         Update: never;
+        Relationships: [];
       };
     };
+    Views: {};
     Functions: {
       get_user_reading_stats: {
         Args: { p_user_id: string; p_year?: number };

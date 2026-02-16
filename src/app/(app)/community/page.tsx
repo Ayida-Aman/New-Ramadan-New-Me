@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -46,7 +47,7 @@ export default function CommunityPage() {
         .select("*, profiles(display_name, avatar_url)")
         .order("created_at", { ascending: false })
         .limit(50);
-      return (data ?? []) as PostWithProfile[];
+      return (data ?? []) as unknown as PostWithProfile[];
     },
   });
 
@@ -59,7 +60,7 @@ export default function CommunityPage() {
         .from("post_likes")
         .select("post_id")
         .eq("user_id", user.id);
-      return (data ?? []).map((l) => l.post_id);
+      return (data ?? []).map((l: any) => l.post_id);
     },
     enabled: !!user,
   });
@@ -74,7 +75,7 @@ export default function CommunityPage() {
         user_id: user.id,
         post_type: newType,
         content: newContent,
-      });
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -99,12 +100,12 @@ export default function CommunityPage() {
         await supabase.from("post_likes").insert({
           post_id: postId,
           user_id: user.id,
-        });
+        } as any);
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["user-likes"] });
+      queryClient.invalidateQueries({ queryKey: ["user-likes", user?.id] });
     },
   });
 

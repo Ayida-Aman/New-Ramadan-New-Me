@@ -85,7 +85,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-gold/10 text-gold-dark dark:text-gold px-4 py-1.5 rounded-full text-sm font-medium mb-8">
             <Sparkles className="h-4 w-4" />
-            Ramadan 2026 is approaching
+            Ramadan 2026 is here
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-navy dark:text-cream-light leading-tight tracking-tight">

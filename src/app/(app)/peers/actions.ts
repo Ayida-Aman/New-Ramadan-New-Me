@@ -45,7 +45,7 @@ export async function invitePeerByEmail(email: string) {
     user_id: user.id,
     peer_id: peerUser.id,
     ramadan_year: ramadan.year,
-  });
+  } as any);
 
   if (error) {
     if (error.code === "23505") {

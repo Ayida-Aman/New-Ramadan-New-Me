@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -97,7 +98,7 @@ export default function PeersPage() {
   } | null>(null);
 
   // Fetch peer connections
-  const { data: connections } = useQuery({
+  const { data: connections } = useQuery<any[]>({
     queryKey: ["peer-connections", user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -158,12 +159,18 @@ export default function PeersPage() {
 
       const progressMap: Record<string, PeerProgress> = {};
 
+      // Define the expected shape of the stats returned by the RPC
+      type ReadingStats = {
+        total_pages_read: number;
+        current_streak: number;
+      };
+
       // Fetch reading stats for all peers
       const statsPromises = peerIds.map((peerId: string) =>
         supabase.rpc("get_user_reading_stats", {
           p_user_id: peerId,
           p_year: ramadan.year,
-        })
+        } as any) as unknown as Promise<any>
       );
 
       // Fetch quran goals for all peers

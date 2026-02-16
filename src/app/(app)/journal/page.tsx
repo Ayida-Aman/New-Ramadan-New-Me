@@ -69,7 +69,7 @@ export default function JournalPage() {
           content,
           mood,
           ramadan_year: ramadan.year,
-        },
+        } as any,
         { onConflict: "user_id,reflection_date,ramadan_year" }
       );
       if (error) throw error;
