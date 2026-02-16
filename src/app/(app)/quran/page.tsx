@@ -1,0 +1,366 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useUser } from "@/providers/supabase-provider";
+import { createClient } from "@/lib/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ProgressRing } from "@/components/dashboard/progress-ring";
+import {
+  BookOpen,
+  Flame,
+  Check,
+  Loader2,
+  Calendar,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  getRamadanInfo,
+  calculateDailyTarget,
+  distributePagesAcrossPrayers,
+  PRAYERS,
+  PRAYER_LABELS,
+  type Prayer,
+} from "@/lib/ramadan";
+import type { QuranGoal, ReadingLog, ReadingStats } from "@/types/supabase";
+
+const GOAL_OPTIONS = [
+  { type: "1x" as const, label: "1x Khatm", pages: 604 },
+  { type: "2x" as const, label: "2x Khatm", pages: 1208 },
+  { type: "3x" as const, label: "3x Khatm", pages: 1812 },
+];
+
+export default function QuranPage() {
+  const { user } = useUser();
+  const supabase = createClient();
+  const queryClient = useQueryClient();
+  const ramadan = getRamadanInfo();
+
+  // Fetch goal
+  const { data: goal, isLoading: goalLoading } = useQuery({
+    queryKey: ["quran-goal", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("quran_goals")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Fetch all reading logs
+  const { data: logs } = useQuery({
+    queryKey: ["reading-logs", user?.id, goal?.id],
+    queryFn: async () => {
+      if (!user || !goal) return [];
+      const { data } = await supabase
+        .from("reading_logs")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("goal_id", goal.id)
+        .order("log_date", { ascending: false });
+      return (data ?? []) as ReadingLog[];
+    },
+    enabled: !!user && !!goal,
+  });
+
+  // Fetch stats
+  const { data: statsData } = useQuery({
+    queryKey: ["reading-stats", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase.rpc("get_user_reading_stats", {
+        p_user_id: user.id,
+        p_year: ramadan.year,
+      });
+      return data?.[0] ?? null;
+    },
+    enabled: !!user,
+  });
+
+  const stats = statsData as ReadingStats | null;
+
+  // Create goal mutation
+  const createGoal = useMutation({
+    mutationFn: async (goalType: "1x" | "2x" | "3x" | "custom") => {
+      if (!user) throw new Error("Not authenticated");
+      const option = GOAL_OPTIONS.find((g) => g.type === goalType);
+      const totalPages = option?.pages ?? 604;
+      const daily = calculateDailyTarget(totalPages, ramadan.totalDays);
+      const distribution = distributePagesAcrossPrayers(daily);
+
+      const { data, error } = await supabase
+        .from("quran_goals")
+        .insert({
+          user_id: user.id,
+          goal_type: goalType,
+          total_pages: totalPages,
+          ramadan_days: ramadan.totalDays,
+          prayer_distribution: distribution,
+          ramadan_year: ramadan.year,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["quran-goal"] });
+    },
+  });
+
+  // Log reading mutation
+  const logReading = useMutation({
+    mutationFn: async ({
+      pages,
+      prayers,
+    }: {
+      pages: number;
+      prayers: Record<Prayer, boolean>;
+    }) => {
+      if (!user || !goal) throw new Error("No goal");
+      const today = new Date().toISOString().split("T")[0];
+
+      const { error } = await supabase.from("reading_logs").upsert(
+        {
+          user_id: user.id,
+          goal_id: goal.id,
+          log_date: today,
+          pages_read: pages,
+          prayers_completed: prayers,
+        },
+        { onConflict: "user_id,goal_id,log_date" }
+      );
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reading-logs"] });
+      queryClient.invalidateQueries({ queryKey: ["reading-stats"] });
+    },
+  });
+
+  const [todayPages, setTodayPages] = useState(0);
+  const [prayersDone, setPrayersDone] = useState<Record<Prayer, boolean>>({
+    fajr: false,
+    dhuhr: false,
+    asr: false,
+    maghrib: false,
+    isha: false,
+  });
+
+  // Init from today's log
+  const todayLog = logs?.find(
+    (l) => l.log_date === new Date().toISOString().split("T")[0]
+  );
+  useEffect(() => {
+    if (todayLog) {
+      setTodayPages(todayLog.pages_read);
+      if (todayLog.prayers_completed) {
+        setPrayersDone(todayLog.prayers_completed);
+      }
+    }
+  }, [todayLog]);
+
+  if (goalLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 text-gold animate-spin" />
+      </div>
+    );
+  }
+
+  // Goal setup view
+  if (!goal) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-navy dark:text-cream-light">
+            Quran Reading Planner
+          </h1>
+          <p className="text-muted mt-1">
+            Choose your Ramadan Quran goal
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {GOAL_OPTIONS.map((option) => {
+            const daily = calculateDailyTarget(option.pages, ramadan.totalDays);
+            return (
+              <button
+                key={option.type}
+                onClick={() => createGoal.mutate(option.type)}
+                disabled={createGoal.isPending}
+                className="w-full bg-card rounded-2xl border border-border/50 p-5 text-left hover:border-gold/50 transition-all group"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-navy dark:text-cream-light group-hover:text-gold transition-colors">
+                      {option.label}
+                    </h3>
+                    <p className="text-sm text-muted mt-0.5">
+                      {option.pages} pages total &middot; ~{daily} pages/day
+                    </p>
+                  </div>
+                  <BookOpen className="h-6 w-6 text-gold/50 group-hover:text-gold transition-colors" />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // Main tracking view
+  const totalRead = stats?.total_pages_read ?? 0;
+  const progress = goal.total_pages > 0 ? Math.round((totalRead / goal.total_pages) * 100) : 0;
+  const streak = stats?.current_streak ?? 0;
+  const distribution = goal.prayer_distribution as Record<Prayer, number>;
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-navy dark:text-cream-light">
+          Quran Progress
+        </h1>
+        <p className="text-muted mt-1">
+          {goal.goal_type.toUpperCase()} Khatm &middot; {goal.daily_target} pages/day
+        </p>
+      </div>
+
+      {/* Large progress ring */}
+      <div className="bg-card rounded-2xl border border-border/50 p-6 flex flex-col items-center">
+        <ProgressRing progress={progress} size={180} strokeWidth={14}>
+          <span className="text-3xl font-bold text-navy dark:text-gold">
+            {progress}%
+          </span>
+          <span className="text-sm text-muted">
+            {totalRead}/{goal.total_pages}
+          </span>
+        </ProgressRing>
+
+        <div className="flex items-center gap-6 mt-4">
+          <div className="text-center">
+            <div className="text-lg font-bold text-navy dark:text-gold">
+              {stats?.days_logged ?? 0}
+            </div>
+            <div className="text-xs text-muted">Days</div>
+          </div>
+          <div className="w-px h-8 bg-border" />
+          <div className="text-center">
+            <div className="text-lg font-bold text-navy dark:text-gold flex items-center gap-1">
+              <Flame className={cn("h-4 w-4", streak > 0 ? "text-orange-500" : "text-muted")} />
+              {streak}
+            </div>
+            <div className="text-xs text-muted">Streak</div>
+          </div>
+          <div className="w-px h-8 bg-border" />
+          <div className="text-center">
+            <div className="text-lg font-bold text-navy dark:text-gold">
+              {goal.total_pages - totalRead}
+            </div>
+            <div className="text-xs text-muted">Remaining</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Today's log */}
+      <div className="bg-card rounded-2xl border border-border/50 p-5">
+        <h2 className="font-semibold text-navy dark:text-cream-light mb-4 flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-gold" />
+          Today&apos;s Reading
+        </h2>
+
+        {/* Pages input */}
+        <div className="flex items-center gap-4 mb-4">
+          <label className="text-sm text-muted">Pages read:</label>
+          <input
+            type="number"
+            min={0}
+            max={604}
+            value={todayPages}
+            onChange={(e) => setTodayPages(parseInt(e.target.value) || 0)}
+            className="w-24 px-3 py-2 rounded-xl border border-input bg-background text-center font-semibold text-navy dark:text-gold focus:outline-none focus:ring-2 focus:ring-gold/50"
+          />
+          <span className="text-sm text-muted">/ {goal.daily_target}</span>
+        </div>
+
+        {/* Prayer checkboxes */}
+        <div className="space-y-2 mb-4">
+          <p className="text-sm text-muted">Prayers with Quran reading:</p>
+          <div className="flex flex-wrap gap-2">
+            {PRAYERS.map((prayer) => (
+              <button
+                key={prayer}
+                onClick={() =>
+                  setPrayersDone((prev) => ({
+                    ...prev,
+                    [prayer]: !prev[prayer],
+                  }))
+                }
+                className={cn(
+                  "px-3 py-1.5 rounded-xl text-sm font-medium transition-all",
+                  prayersDone[prayer]
+                    ? "bg-gold text-navy"
+                    : "bg-secondary text-muted hover:text-foreground"
+                )}
+              >
+                {PRAYER_LABELS[prayer]}
+                {distribution[prayer] > 0 && (
+                  <span className="ml-1 text-xs opacity-70">
+                    ({distribution[prayer]}p)
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button
+          onClick={() =>
+            logReading.mutate({ pages: todayPages, prayers: prayersDone })
+          }
+          disabled={logReading.isPending}
+          className="w-full bg-navy dark:bg-gold text-cream-light dark:text-navy py-2.5 rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {logReading.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : logReading.isSuccess ? (
+            <>
+              <Check className="h-4 w-4" />
+              Saved!
+            </>
+          ) : (
+            "Save Today's Reading"
+          )}
+        </button>
+      </div>
+
+      {/* Recent logs */}
+      {logs && logs.length > 0 && (
+        <div className="bg-card rounded-2xl border border-border/50 p-5">
+          <h2 className="font-semibold text-navy dark:text-cream-light mb-3">
+            Recent Activity
+          </h2>
+          <div className="space-y-2">
+            {logs.slice(0, 7).map((log) => (
+              <div
+                key={log.id}
+                className="flex items-center justify-between py-2 border-b border-border/30 last:border-0"
+              >
+                <span className="text-sm text-muted">{log.log_date}</span>
+                <span className="text-sm font-semibold text-navy dark:text-gold">
+                  {log.pages_read} pages
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

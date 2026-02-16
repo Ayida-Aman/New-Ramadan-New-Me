@@ -1,26 +1,152 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-navy: #0A2540;
+  --color-navy-light: #1a3a5c;
+  --color-gold: #D4AF37;
+  --color-gold-light: #E8D48B;
+  --color-gold-dark: #B8941F;
+  --color-cream: #F8F1E9;
+  --color-cream-light: #FEFCF7;
+  --color-emerald: #10B981;
+  --color-emerald-light: #D1FAE5;
+
+  --color-background: #F8F1E9;
+  --color-foreground: #1F2937;
+  --color-muted: #6B7280;
+  --color-muted-foreground: #9CA3AF;
+  --color-card: #FEFCF7;
+  --color-card-foreground: #1F2937;
+  --color-border: #E5DDD3;
+  --color-input: #E5DDD3;
+  --color-ring: #D4AF37;
+  --color-primary: #0A2540;
+  --color-primary-foreground: #FEFCF7;
+  --color-secondary: #F3EADC;
+  --color-secondary-foreground: #0A2540;
+  --color-accent: #D4AF37;
+  --color-accent-foreground: #0A2540;
+  --color-destructive: #EF4444;
+  --color-destructive-foreground: #FEFCF7;
+  --color-success: #10B981;
+  --color-success-foreground: #FEFCF7;
+
+  --font-sans: "Inter", "Noto Sans Arabic", system-ui, sans-serif;
+  --font-arabic: "Noto Sans Arabic", "Tajawal", sans-serif;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Dark theme overrides */
+.dark {
+  --color-background: #0A1628;
+  --color-foreground: #E5E7EB;
+  --color-muted: #9CA3AF;
+  --color-muted-foreground: #6B7280;
+  --color-card: #111D33;
+  --color-card-foreground: #E5E7EB;
+  --color-border: #1E3050;
+  --color-input: #1E3050;
+  --color-primary: #D4AF37;
+  --color-primary-foreground: #0A2540;
+  --color-secondary: #1E3050;
+  --color-secondary-foreground: #E5E7EB;
+  --color-accent: #D4AF37;
+  --color-accent-foreground: #0A2540;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  html {
+    scroll-behavior: smooth;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Islamic geometric pattern (subtle background) */
+.islamic-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
+
+/* Crescent moon pattern (very subtle) */
+.crescent-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.03'%3E%3Cpath d='M40 20c-5.5 0-10 4.5-10 10s4.5 10 10 10c2.8 0 5.3-1.1 7.1-3a12 12 0 01-7.1 2.2c-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.1.9 7.1 2.3A9.9 9.9 0 0040 20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted);
+}
+
+/* Progress ring animation */
+@keyframes progress-ring {
+  from { stroke-dashoffset: var(--ring-circumference); }
+  to { stroke-dashoffset: var(--ring-offset); }
+}
+.animate-progress-ring {
+  animation: progress-ring 1.5s ease-out forwards;
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100px) rotate(720deg); opacity: 0; }
+}
+.animate-confetti {
+  animation: confetti-fall 1.5s ease-out forwards;
+}
+
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float {
+  animation: gentle-float 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.3); }
+  50% { box-shadow: 0 0 20px 4px rgba(212, 175, 55, 0.15); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+
+.stagger-children > * {
+  opacity: 0;
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
