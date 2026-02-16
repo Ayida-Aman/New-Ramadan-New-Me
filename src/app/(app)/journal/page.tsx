@@ -5,7 +5,7 @@ import { useUser } from "@/providers/supabase-provider";
 import { createClient } from "@/lib/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRamadanInfo } from "@/lib/ramadan";
-import { PenLine, Save, Loader2, Calendar, Heart, Smile, Sun, Shield, Cloud, Eye } from "lucide-react";
+import { PenLine, Save, Loader2, Calendar, Heart, Smile, Sun, Shield, Cloud, Eye, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Reflection, MoodType } from "@/types/supabase";
 
@@ -25,6 +25,8 @@ const PROMPTS_BY_WEEK: Record<number, string> = {
   4: "What are you most grateful for this Ramadan? What will you carry forward?",
 };
 
+const INITIAL_VISIBLE = 5;
+
 export default function JournalPage() {
   const { user } = useUser();
   const supabase = createClient();
@@ -33,7 +35,7 @@ export default function JournalPage() {
 
   const [content, setContent] = useState("");
   const [mood, setMood] = useState<MoodType | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   const prompt = PROMPTS_BY_WEEK[ramadan.weekNumber] ?? PROMPTS_BY_WEEK[1];
 
@@ -53,17 +55,8 @@ export default function JournalPage() {
     enabled: !!user,
   });
 
-  // Check today's reflection
   const today = new Date().toISOString().split("T")[0];
   const todayReflection = reflections?.find((r) => r.reflection_date === today);
-
-  // Initialize from existing
-  useState(() => {
-    if (todayReflection) {
-      setContent(todayReflection.content);
-      setMood(todayReflection.mood);
-    }
-  });
 
   const saveReflection = useMutation({
     mutationFn: async () => {
@@ -82,10 +75,17 @@ export default function JournalPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reflections"] });
-      setSaved(true);
+      queryClient.invalidateQueries({ queryKey: ["reflections", user?.id] });
+      // Reset form
+      setContent("");
+      setMood(null);
     },
   });
+
+  const visibleReflections = showAll
+    ? reflections
+    : reflections?.slice(0, INITIAL_VISIBLE);
+  const hasMore = (reflections?.length ?? 0) > INITIAL_VISIBLE;
 
   return (
     <div className="space-y-6">
@@ -159,60 +159,63 @@ export default function JournalPage() {
             </>
           )}
         </button>
-
-        {/* Show saved confirmation */}
-        {(saved || todayReflection) && content.trim() && (
-          <div className="mt-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-            <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-2">
-              ✓ Today&apos;s reflection saved
-            </p>
-            <div className="text-sm text-foreground">
-              {mood && (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-muted mb-1">
-                  Feeling: {MOODS.find((m) => m.value === mood)?.label}
-                </span>
-              )}
-              <p className="line-clamp-3">{content}</p>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Timeline */}
-      {reflections && reflections.length > 0 && (
+      {/* Past Reflections */}
+      {visibleReflections && visibleReflections.length > 0 && (
         <div>
           <h2 className="font-semibold text-navy dark:text-cream-light mb-3 flex items-center gap-2">
             <Calendar className="h-5 w-5 text-gold" />
             Past Reflections
           </h2>
           <div className="space-y-3">
-            {reflections
-              .filter((r) => r.reflection_date !== today)
-              .map((reflection) => {
-                const moodInfo = MOODS.find((m) => m.value === reflection.mood);
-                return (
-                  <div
-                    key={reflection.id}
-                    className="bg-card rounded-xl border border-border/50 p-4"
-                  >
-                    <div className="flex items-center justify-between mb-2">
+            {visibleReflections.map((reflection) => {
+              const moodInfo = MOODS.find((m) => m.value === reflection.mood);
+              const isToday = reflection.reflection_date === today;
+              return (
+                <div
+                  key={reflection.id}
+                  className={cn(
+                    "bg-card rounded-xl border border-border/50 p-4",
+                    isToday && "ring-1 ring-gold/30"
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
                       <span className="text-xs font-medium text-muted">
                         {reflection.reflection_date}
                       </span>
-                      {moodInfo && (
-                        <span className={cn("text-xs font-medium flex items-center gap-1", moodInfo.color)}>
-                          <moodInfo.icon className="h-3 w-3" />
-                          {moodInfo.label}
+                      {isToday && (
+                        <span className="text-xs font-medium text-gold bg-gold/10 px-2 py-0.5 rounded-full">
+                          Today
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-foreground line-clamp-3">
-                      {reflection.content}
-                    </p>
+                    {moodInfo && (
+                      <span className={cn("text-xs font-medium flex items-center gap-1", moodInfo.color)}>
+                        <moodInfo.icon className="h-3 w-3" />
+                        {moodInfo.label}
+                      </span>
+                    )}
                   </div>
-                );
-              })}
+                  <p className="text-sm text-foreground line-clamp-3">
+                    {reflection.content}
+                  </p>
+                </div>
+              );
+            })}
           </div>
+
+          {/* Show more / Show less */}
+          {hasMore && (
+            <button
+              onClick={() => setShowAll(!showAll)}
+              className="mt-3 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium text-muted hover:text-gold hover:bg-gold/5 transition-all"
+            >
+              <ChevronDown className={cn("h-4 w-4 transition-transform", showAll && "rotate-180")} />
+              {showAll ? "Show less" : `Show all ${reflections?.length} reflections`}
+            </button>
+          )}
         </div>
       )}
     </div>

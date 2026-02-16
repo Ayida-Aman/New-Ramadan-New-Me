@@ -11,6 +11,8 @@ import {
   Check,
   Loader2,
   Calendar,
+  Minus,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -23,11 +25,7 @@ import {
 } from "@/lib/ramadan";
 import type { QuranGoal, ReadingLog, ReadingStats } from "@/types/supabase";
 
-const GOAL_OPTIONS = [
-  { type: "1x" as const, label: "1x Khatm", pages: 604 },
-  { type: "2x" as const, label: "2x Khatm", pages: 1208 },
-  { type: "3x" as const, label: "3x Khatm", pages: 1812 },
-];
+const QURAN_PAGES = 604;
 
 export default function QuranPage() {
   const { user } = useUser();
@@ -83,12 +81,14 @@ export default function QuranPage() {
 
   const stats = statsData as ReadingStats | null;
 
+  const [khatmCount, setKhatmCount] = useState(1);
+
   // Create goal mutation
   const createGoal = useMutation({
-    mutationFn: async (goalType: "1x" | "2x" | "3x" | "custom") => {
+    mutationFn: async (times: number) => {
       if (!user) throw new Error("Not authenticated");
-      const option = GOAL_OPTIONS.find((g) => g.type === goalType);
-      const totalPages = option?.pages ?? 604;
+      const totalPages = QURAN_PAGES * times;
+      const goalType = times <= 3 ? (`${times}x` as "1x" | "2x" | "3x") : "custom";
       const daily = calculateDailyTarget(totalPages, ramadan.totalDays);
       const distribution = distributePagesAcrossPrayers(daily);
 
@@ -175,6 +175,9 @@ export default function QuranPage() {
 
   // Goal setup view
   if (!goal) {
+    const totalPages = QURAN_PAGES * khatmCount;
+    const dailyTarget = calculateDailyTarget(totalPages, ramadan.totalDays);
+
     return (
       <div className="space-y-6">
         <div>
@@ -182,34 +185,54 @@ export default function QuranPage() {
             Quran Reading Planner
           </h1>
           <p className="text-muted mt-1">
-            Choose your Ramadan Quran goal
+            How many times would you like to finish the Quran?
           </p>
         </div>
 
-        <div className="space-y-3">
-          {GOAL_OPTIONS.map((option) => {
-            const daily = calculateDailyTarget(option.pages, ramadan.totalDays);
-            return (
-              <button
-                key={option.type}
-                onClick={() => createGoal.mutate(option.type)}
-                disabled={createGoal.isPending}
-                className="w-full bg-card rounded-2xl border border-border/50 p-5 text-left hover:border-gold/50 transition-all group"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-navy dark:text-cream-light group-hover:text-gold transition-colors">
-                      {option.label}
-                    </h3>
-                    <p className="text-sm text-muted mt-0.5">
-                      {option.pages} pages total &middot; ~{daily} pages/day
-                    </p>
-                  </div>
-                  <BookOpen className="h-6 w-6 text-gold/50 group-hover:text-gold transition-colors" />
-                </div>
-              </button>
-            );
-          })}
+        <div className="bg-card rounded-2xl border border-border/50 p-6 flex flex-col items-center">
+          <BookOpen className="h-10 w-10 text-gold mb-4" />
+
+          <div className="flex items-center gap-5 mb-4">
+            <button
+              onClick={() => setKhatmCount(Math.max(1, khatmCount - 1))}
+              className="p-2.5 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors"
+            >
+              <Minus className="h-5 w-5" />
+            </button>
+            <div className="text-center">
+              <span className="text-4xl font-bold text-navy dark:text-gold">
+                {khatmCount}
+              </span>
+              <p className="text-sm text-muted mt-1">
+                {khatmCount === 1 ? "time" : "times"}
+              </p>
+            </div>
+            <button
+              onClick={() => setKhatmCount(khatmCount + 1)}
+              className="p-2.5 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors"
+            >
+              <Plus className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="w-full bg-gold/5 rounded-xl p-3 mb-5 text-center">
+            <p className="text-sm text-foreground">
+              <span className="font-semibold">{totalPages}</span> pages total &middot;{" "}
+              <span className="font-semibold">~{dailyTarget}</span> pages/day
+            </p>
+          </div>
+
+          <button
+            onClick={() => createGoal.mutate(khatmCount)}
+            disabled={createGoal.isPending}
+            className="w-full bg-navy dark:bg-gold text-cream-light dark:text-navy py-2.5 rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {createGoal.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              "Start Tracking"
+            )}
+          </button>
         </div>
       </div>
     );
