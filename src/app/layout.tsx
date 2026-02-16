@@ -56,8 +56,9 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             <SupabaseProvider>
-              {children}
-              <Footer />
+              <div className="pb-20 md:pb-6">{children}
+                <Footer />
+              </div>
             </SupabaseProvider>
           </QueryProvider>
         </ThemeProvider>

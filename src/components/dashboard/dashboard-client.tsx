@@ -218,8 +218,8 @@ export function DashboardClient({
         </Link>
       )}
 
-      {/* Peer / Reflection row */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Peer / Reflection / Community row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {/* Peer */}
         <Link
           href="/peers"
@@ -255,6 +255,18 @@ export function DashboardClient({
             Daily Reflection
           </p>
           <p className="text-xs text-muted mt-0.5">Write your thoughts</p>
+        </Link>
+
+        {/* Community */}
+        <Link
+          href="/community"
+          className="bg-card rounded-2xl border border-border/50 p-4 hover:border-gold/30 transition-colors"
+        >
+          <Sparkles className="h-5 w-5 text-gold mb-2" />
+          <p className="text-sm font-semibold text-navy dark:text-cream-light">
+            Community
+          </p>
+          <p className="text-xs text-muted mt-0.5">Share & uplift</p>
         </Link>
       </div>
     </div>

@@ -114,7 +114,7 @@ export default function CommunityPage() {
   const regularPosts = posts?.filter((p) => !p.is_featured) ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-navy dark:text-cream-light">
@@ -133,7 +133,7 @@ export default function CommunityPage() {
       {/* Compose */}
       {showCompose && (
         <div className="bg-card rounded-2xl border border-border/50 p-5 animate-fade-in-up">
-          <div className="flex gap-2 mb-3">
+          <div className="flex flex-wrap gap-2 mb-3">
             {POST_TYPES.map((type) => (
               <button
                 key={type.value}
@@ -281,10 +281,6 @@ function PostCard({
               />
               {post.likes_count > 0 && post.likes_count}
             </button>
-            <span className="flex items-center gap-1 text-sm text-muted">
-              <MessageCircle className="h-4 w-4" />
-              {post.comments_count > 0 && post.comments_count}
-            </span>
           </div>
         </div>
       </div>

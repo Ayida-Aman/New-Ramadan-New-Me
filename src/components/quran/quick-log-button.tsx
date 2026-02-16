@@ -75,7 +75,7 @@ export function QuickLogButton() {
 
       {/* Quick log panel */}
       {isOpen && (
-        <div className="fixed bottom-24 md:bottom-8 right-4 z-50 bg-card rounded-2xl border border-border shadow-xl p-5 w-72 animate-fade-in-up">
+        <div className="fixed bottom-36 md:bottom-8 right-4 z-50 bg-card rounded-2xl border border-border shadow-xl p-5 w-72 animate-fade-in-up">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-navy dark:text-cream-light">
               Quick Log
@@ -136,11 +136,15 @@ export function QuickLogButton() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "fixed bottom-20 md:bottom-6 right-4 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all",
+          "fixed bottom-28 md:bottom-6 right-4 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all",
           isOpen
             ? "bg-muted text-muted-foreground rotate-45"
             : "bg-gold text-navy animate-pulse-glow hover:scale-105"
         )}
+        style={{
+          // ensure it sits above safe-area inset on mobile
+          marginBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
       >
         {isOpen ? <X className="h-6 w-6" /> : <BookOpen className="h-6 w-6" />}
       </button>

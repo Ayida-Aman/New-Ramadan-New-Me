@@ -59,20 +59,20 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Moon className="h-6 w-6 text-gold" />
-            <span className="text-lg font-semibold text-navy dark:text-gold">
+            <span className="text-lg font-semibold text-navy dark:text-gold hidden sm:block">
               New Ramadan New Me
             </span>
           </div>
           <div className="flex items-center gap-3">
             <Link
               href="/auth/login"
-              className="text-sm font-medium text-muted hover:text-foreground transition-colors px-4 py-2"
+              className="text-sm font-medium text-muted hover:text-foreground transition-colors px-3 py-1.5 sm:px-4 sm:py-2"
             >
               Sign in
             </Link>
             <Link
               href="/auth/signup"
-              className="text-sm font-medium bg-navy dark:bg-gold text-cream-light dark:text-navy px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
+              className="text-sm font-medium bg-navy dark:bg-gold text-cream-light dark:text-navy px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl hover:opacity-90 transition-opacity"
             >
               Get Started
             </Link>
