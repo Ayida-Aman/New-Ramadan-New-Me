@@ -262,18 +262,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-8 px-4">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-muted text-sm">
-            <Moon className="h-4 w-4 text-gold" />
-            New Ramadan New Me
-          </div>
-          <p className="text-sm text-muted">
-            Built with love for the Ummah
-          </p>
-        </div>
-      </footer>
+      {/* Footer is now shared via the root layout */}
     </div>
   );
 }

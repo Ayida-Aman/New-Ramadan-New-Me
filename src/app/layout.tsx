@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import { SupabaseProvider } from "@/providers/supabase-provider";
 import "./globals.css";
+import Footer from "@/components/layout/footer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -54,7 +55,10 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans`}>
         <ThemeProvider>
           <QueryProvider>
-            <SupabaseProvider>{children}</SupabaseProvider>
+            <SupabaseProvider>
+              {children}
+              <Footer />
+            </SupabaseProvider>
           </QueryProvider>
         </ThemeProvider>
       </body>
