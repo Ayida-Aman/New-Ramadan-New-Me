@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -138,6 +139,7 @@ export default function QuranPage() {
       if (error) throw error;
     },
     onSuccess: async () => {
+      if (!user) return;
       queryClient.invalidateQueries({ queryKey: ["reading-logs"] });
       queryClient.invalidateQueries({ queryKey: ["reading-stats"] });
 
@@ -219,11 +221,17 @@ export default function QuranPage() {
   );
   useEffect(() => {
     if (todayLog) {
-      setTodayPages(todayLog.pages_read);
-      if (todayLog.prayers_completed) {
+      setTodayPages((prev) =>
+        prev !== todayLog.pages_read ? todayLog.pages_read : prev
+      );
+      if (
+        todayLog.prayers_completed &&
+        JSON.stringify(todayLog.prayers_completed) !== JSON.stringify(prayersDone)
+      ) {
         setPrayersDone(todayLog.prayers_completed);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todayLog]);
 
   if (goalLoading) {
