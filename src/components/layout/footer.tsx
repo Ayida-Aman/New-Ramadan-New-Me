@@ -1,3 +1,4 @@
+import Link from "next/link";
 export default function Footer() {
   return (
     <footer className="border-t border-border py-8 px-4">
@@ -8,9 +9,15 @@ export default function Footer() {
           </svg>
           New Ramadan New Me
         </div>
+                <p className="text-sm text-muted">
+          <Link href="/TheStoryBehind" className="hover:text-gold transition-colors">
+            The Story Behind
+          </Link>
+        </p>
         <p className="text-sm text-muted">
           Built with love for the Ummah by <a href="https://t.me/aydus_journal" className="text-gold hover:underline">Ninja girl</a>.
         </p>
+
       </div>
     </footer>
   );
