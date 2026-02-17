@@ -27,9 +27,9 @@ export default function StoryBehindPage() {
 
         <p className="text-foreground leading-relaxed">
           People often say <span className="italic">“New Year, New Me”</span> because
-          they want to leave behind the version of themselves they didn’t like.
-          For me, Ramadan is that golden chance to change, to renew my soul, my
-          habits, and my connection with Allah.
+          they want to leave behind the version of themselves they didn’t like. And if you want to leave behind the version of yourself that you didn’t like in the past Ramadans, and embrace the opportunity to renew yourself.
+          Ramadan is that golden chance to change, to renew our soul, our
+          habits, and our connection with Allah.
         </p>
 
         <p className="text-foreground leading-relaxed">
