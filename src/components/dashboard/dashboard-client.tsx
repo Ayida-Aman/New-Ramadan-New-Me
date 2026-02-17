@@ -12,6 +12,7 @@ import {
   Sparkles,
   CheckCircle2,
   ArrowRight,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RamadanInfo } from "@/lib/ramadan";
@@ -23,6 +24,7 @@ import type {
   DailyChallenge,
   WeeklyTheme,
   PeerConnection,
+  Badge,
 } from "@/types/supabase";
 
 interface DashboardClientProps {
@@ -36,6 +38,8 @@ interface DashboardClientProps {
   peerConnection: (PeerConnection & { peer?: { display_name: string; avatar_url: string | null } }) | null;
   ramadan: RamadanInfo;
   greeting: string;
+  badges: Badge[];
+  earnedBadgeIds: string[];
 }
 
 export function DashboardClient({
@@ -49,6 +53,8 @@ export function DashboardClient({
   peerConnection,
   ramadan,
   greeting,
+  badges,
+  earnedBadgeIds,
 }: DashboardClientProps) {
   const displayName = profile?.display_name || "Friend";
   const totalRead = stats?.total_pages_read ?? 0;
@@ -57,6 +63,7 @@ export function DashboardClient({
   const todayPages = todayLog?.pages_read ?? 0;
   const dailyTarget = goal?.daily_target ?? 20;
   const streak = stats?.current_streak ?? 0;
+  const earnedBadges = badges.filter((b) => earnedBadgeIds.includes(b.id));
 
   return (
     <div className="space-y-6 stagger-children">
@@ -65,13 +72,46 @@ export function DashboardClient({
         <h1 className="text-2xl font-bold text-navy dark:text-cream-light">
           {greeting}, {displayName}
         </h1>
-        <p className="text-muted mt-1">
+        {/* <p className="text-muted mt-1">
           {ramadan.isActive
             ? `Day ${ramadan.currentDay} of ${ramadan.totalDays}`
             : ramadan.daysUntilStart
               ? `${ramadan.daysUntilStart} days until Ramadan`
               : "Ramadan has ended — keep the momentum!"}
-        </p>
+        </p> */}
+      </div>
+
+      {/* Badges (full list with earned state) */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-medium text-muted">Badges</h3>
+          <span className="text-xs text-muted">{badges.filter(b => earnedBadgeIds.includes(b.id)).length} earned</span>
+        </div>
+          {earnedBadges && earnedBadges.length > 0 ? (
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+              {earnedBadges.map((badge) => (
+                <div
+                  key={badge.id}
+                  className={cn(
+                    "flex flex-col items-center text-center p-3 rounded-xl transition-all",
+                    "bg-gold/10"
+                  )}
+                >
+                  <div className={cn(
+                      "w-10 h-10 rounded-full flex items-center justify-center text-lg mb-1",
+                      "bg-gold/20 text-gold"
+                    )}>
+                    <Award className="h-5 w-5" />
+                  </div>
+                  <span className="text-[11px] font-medium leading-tight truncate">
+                    {badge.title}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted">No badges yet — keep reading!</p>
+          )}
       </div>
 
       {/* Weekly Theme Banner */}
