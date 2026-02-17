@@ -137,9 +137,70 @@ export default function QuranPage() {
       );
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["reading-logs"] });
       queryClient.invalidateQueries({ queryKey: ["reading-stats"] });
+
+      try {
+        // Fetch relevant badges (quran + streak categories)
+        const { data: badges } = await supabase
+          .from("badges")
+          .select("*")
+          .in("category", ["quran", "streak"]);
+
+        if (!badges || badges.length === 0) return;
+
+        // Fetch already earned badges
+        const { data: userBadges } = await supabase
+          .from("user_badges")
+          .select("*")
+          .eq("user_id", user.id);
+
+        const earned = new Set((userBadges ?? []).map((b: any) => b.badge_id));
+
+        // Get latest reading stats via RPC
+        const { data: statsArr } = await supabase.rpc("get_user_reading_stats", {
+          p_user_id: user.id,
+          p_year: ramadan.year,
+        });
+        const stats = (statsArr && statsArr[0]) || { total_pages_read: 0, current_streak: 0 };
+
+        for (const badge of badges) {
+          if (earned.has(badge.id)) continue;
+
+          // badge.requirement is stored as JSON in the DB
+          const req: any = badge.requirement ?? {};
+
+          let qualifies = false;
+
+          if (req.pages_read && typeof req.pages_read === "number") {
+            if (stats.total_pages_read >= req.pages_read) qualifies = true;
+          }
+          if (req.streak && typeof req.streak === "number") {
+            if (stats.current_streak >= req.streak) qualifies = true;
+          }
+
+          if (qualifies) {
+            // award badge
+            await supabase.from("user_badges").insert({ user_id: user.id, badge_id: badge.id });
+
+            // create notification
+            await supabase.from("notifications").insert({
+              user_id: user.id,
+              type: "badge_earned",
+              title: `Badge earned: ${badge.title}`,
+              body: `You earned the \"${badge.title}\" badge.`,
+              data: { badge_id: badge.id },
+            });
+          }
+        }
+
+        queryClient.invalidateQueries({ queryKey: ["user-badges", user.id] });
+        queryClient.invalidateQueries({ queryKey: ["notifications", user.id] });
+      } catch (err) {
+        // don't block the main flow if awarding fails
+        // console.warn(err);
+      }
     },
   });
 

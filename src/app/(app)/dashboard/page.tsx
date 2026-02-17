@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getRamadanInfo, getGreeting } from "@/lib/ramadan";
 import { redirect } from "next/navigation";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
+import type { Badge } from "@/types/supabase";
 
 export const metadata = { title: "Dashboard" };
 
@@ -97,12 +98,24 @@ export default async function DashboardPage() {
 
   const greeting = getGreeting();
 
+  // Fetch all badges and the user's earned badge ids
+  const { data: badges } = await supabase.from("badges").select("*");
+
+  const { data: userBadgeRows } = await supabase
+    .from("user_badges")
+    .select("badge_id")
+    .eq("user_id", user.id);
+
+  const earnedBadgeIds = (userBadgeRows ?? []).map((r: any) => r.badge_id);
+
   return (
     <DashboardClient
       profile={profile}
       goal={goal}
       todayLog={todayLog}
       stats={stats?.[0] ?? null}
+      badges={(badges as Badge[]) ?? []}
+      earnedBadgeIds={earnedBadgeIds}
       todayChallenge={todayChallenge}
       challengeCompleted={!!challengeCompletion}
       weeklyTheme={weeklyTheme}
