@@ -8,10 +8,7 @@ import {
   addDays,
 } from "date-fns";
 
-// Ramadan dates by year (Gregorian approximations — can be overridden via env)
-// These are approximate and should be verified for actual moon sighting.
 const RAMADAN_DATES: Record<number, { start: string; end: string }> = {
-  2025: { start: "2025-03-01", end: "2025-03-30" },
   2026: { start: "2026-02-18", end: "2026-03-19" },
   2027: { start: "2027-02-08", end: "2027-03-09" },
   2028: { start: "2028-01-28", end: "2028-02-26" },
@@ -24,16 +21,15 @@ export interface RamadanInfo {
   startDate: Date;
   endDate: Date;
   totalDays: number;
-  currentDay: number | null; // null if not currently Ramadan
+  currentDay: number | null;
   daysRemaining: number | null;
-  daysUntilStart: number | null; // null if Ramadan has started
+  daysUntilStart: number | null;
   isActive: boolean;
   hasEnded: boolean;
   weekNumber: number; // 1-4
 }
 
 function getRamadanDatesForYear(year: number): { start: Date; end: Date } {
-  // Allow env override
   const envStart = process.env.NEXT_PUBLIC_RAMADAN_START;
   const envEnd = process.env.NEXT_PUBLIC_RAMADAN_END;
 
@@ -43,7 +39,6 @@ function getRamadanDatesForYear(year: number): { start: Date; end: Date } {
 
   const dates = RAMADAN_DATES[year];
   if (!dates) {
-    // Fallback: use 2026 dates
     const fallback = RAMADAN_DATES[2026];
     return { start: parseISO(fallback.start), end: parseISO(fallback.end) };
   }
@@ -55,7 +50,6 @@ export function getCurrentRamadanYear(): number {
   const now = new Date();
   const currentYear = now.getFullYear();
 
-  // Check if we're in the current year's Ramadan or approaching it
   for (const year of [currentYear, currentYear + 1]) {
     if (RAMADAN_DATES[year]) {
       const { end } = getRamadanDatesForYear(year);
@@ -140,7 +134,6 @@ export const PRAYER_LABELS: Record<Prayer, string> = {
 export function distributePagesAcrossPrayers(
   dailyTarget: number
 ): Record<Prayer, number> {
-  // Default distribution: heavier on Fajr and Isha
   const weights = { fajr: 0.3, dhuhr: 0.15, asr: 0.15, maghrib: 0.1, isha: 0.3 };
   const distribution: Record<string, number> = {};
   let remaining = dailyTarget;

@@ -72,13 +72,13 @@ export function DashboardClient({
         <h1 className="text-2xl font-bold text-navy dark:text-cream-light">
           {greeting}, {displayName}
         </h1>
-        {/* <p className="text-muted mt-1">
+        <p className="text-muted mt-1">
           {ramadan.isActive
             ? `Day ${ramadan.currentDay} of ${ramadan.totalDays}`
             : ramadan.daysUntilStart
               ? `${ramadan.daysUntilStart} days until Ramadan`
               : "Ramadan has ended — keep the momentum!"}
-        </p> */}
+        </p>
       </div>
 
       {/* Badges (full list with earned state) */}
