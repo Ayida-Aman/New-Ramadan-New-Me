@@ -1,4 +1,6 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -34,7 +36,7 @@ export default function QuranPage() {
   const queryClient = useQueryClient();
   const ramadan = getRamadanInfo();
 
-  // Fetch goal
+  
   const { data: goal, isLoading: goalLoading } = useQuery({
     queryKey: ["quran-goal", user?.id],
     queryFn: async () => {
@@ -50,7 +52,7 @@ export default function QuranPage() {
     enabled: !!user,
   });
 
-  // Fetch all reading logs
+  
   const { data: logs } = useQuery({
     queryKey: ["reading-logs", user?.id, goal?.id],
     queryFn: async () => {
@@ -66,7 +68,7 @@ export default function QuranPage() {
     enabled: !!user && !!goal,
   });
 
-  // Fetch stats
+  
   const { data: statsData } = useQuery({
     queryKey: ["reading-stats", user?.id],
     queryFn: async () => {
@@ -84,7 +86,7 @@ export default function QuranPage() {
 
   const [khatmCount, setKhatmCount] = useState(1);
 
-  // Create goal mutation
+  
   const createGoal = useMutation({
     mutationFn: async (times: number) => {
       if (!user) throw new Error("Not authenticated");
@@ -114,7 +116,7 @@ export default function QuranPage() {
     },
   });
 
-  // Log reading mutation
+  
   const logReading = useMutation({
     mutationFn: async ({
       pages,
@@ -144,7 +146,7 @@ export default function QuranPage() {
       queryClient.invalidateQueries({ queryKey: ["reading-stats"] });
 
       try {
-        // Fetch relevant badges (quran + streak categories)
+        
         const { data: badges } = await supabase
           .from("badges")
           .select("*")
@@ -152,7 +154,7 @@ export default function QuranPage() {
 
         if (!badges || badges.length === 0) return;
 
-        // Fetch already earned badges
+        
         const { data: userBadges } = await supabase
           .from("user_badges")
           .select("*")
@@ -160,7 +162,7 @@ export default function QuranPage() {
 
         const earned = new Set((userBadges ?? []).map((b: any) => b.badge_id));
 
-        // Get latest reading stats via RPC
+        
         const { data: statsArr } = await supabase.rpc("get_user_reading_stats", {
           p_user_id: user.id,
           p_year: ramadan.year,
@@ -170,7 +172,7 @@ export default function QuranPage() {
         for (const badge of badges) {
           if (earned.has(badge.id)) continue;
 
-          // badge.requirement is stored as JSON in the DB
+          
           const req: any = badge.requirement ?? {};
 
           let qualifies = false;
@@ -183,10 +185,10 @@ export default function QuranPage() {
           }
 
           if (qualifies) {
-            // award badge
+            
             await supabase.from("user_badges").insert({ user_id: user.id, badge_id: badge.id });
 
-            // create notification
+            
             await supabase.from("notifications").insert({
               user_id: user.id,
               type: "badge_earned",
@@ -200,8 +202,8 @@ export default function QuranPage() {
         queryClient.invalidateQueries({ queryKey: ["user-badges", user.id] });
         queryClient.invalidateQueries({ queryKey: ["notifications", user.id] });
       } catch (err) {
-        // don't block the main flow if awarding fails
-        // console.warn(err);
+        
+        
       }
     },
   });
@@ -215,7 +217,7 @@ export default function QuranPage() {
     isha: false,
   });
 
-  // Init from today's log
+  
   const todayLog = logs?.find(
     (l) => l.log_date === new Date().toISOString().split("T")[0]
   );
@@ -231,7 +233,7 @@ export default function QuranPage() {
         setPrayersDone(todayLog.prayers_completed);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [todayLog]);
 
   if (goalLoading) {
@@ -242,7 +244,7 @@ export default function QuranPage() {
     );
   }
 
-  // Goal setup view
+  
   if (!goal) {
     const totalPages = QURAN_PAGES * khatmCount;
     const dailyTarget = calculateDailyTarget(totalPages, ramadan.totalDays);
@@ -307,7 +309,7 @@ export default function QuranPage() {
     );
   }
 
-  // Main tracking view
+  
   const totalRead = stats?.total_pages_read ?? 0;
   const progress = goal.total_pages > 0 ? Math.round((totalRead / goal.total_pages) * 100) : 0;
   const streak = stats?.current_streak ?? 0;

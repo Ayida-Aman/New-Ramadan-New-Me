@@ -26,7 +26,7 @@ export interface RamadanInfo {
   daysUntilStart: number | null;
   isActive: boolean;
   hasEnded: boolean;
-  weekNumber: number; // 1-4
+  weekNumber: number; 
 }
 
 function getRamadanDatesForYear(year: number): { start: Date; end: Date } {

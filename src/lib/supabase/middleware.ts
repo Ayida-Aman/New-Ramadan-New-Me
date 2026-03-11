@@ -25,12 +25,12 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // Refresh session — important!
+  
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protected routes — redirect to login if not authenticated
+  
   const isProtectedRoute = request.nextUrl.pathname.startsWith("/dashboard") ||
     request.nextUrl.pathname.startsWith("/quran") ||
     request.nextUrl.pathname.startsWith("/challenges") ||
@@ -45,7 +45,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users away from auth pages
+  
   const isAuthRoute = request.nextUrl.pathname.startsWith("/auth/login") ||
     request.nextUrl.pathname.startsWith("/auth/signup");
 

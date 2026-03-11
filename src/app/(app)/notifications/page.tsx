@@ -27,7 +27,7 @@ export default function NotificationsPage() {
   });
 
   useEffect(() => {
-    // Mark all unread notifications as read when opening this page
+    
     if (!user) return;
 
     (async () => {
@@ -49,7 +49,7 @@ export default function NotificationsPage() {
           queryClient.invalidateQueries({ queryKey: ["notifications-unread-count", user.id] });
         }
       } catch (err) {
-        // ignore
+        
       }
     })();
   }, [user, queryClient, supabase]);

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useState } from "react";
@@ -38,7 +38,7 @@ export default function CommunityPage() {
   const [newType, setNewType] = useState<PostType>("encouragement");
   const [showCompose, setShowCompose] = useState(false);
 
-  // Fetch posts
+  
   const { data: posts, isLoading } = useQuery({
     queryKey: ["community-posts"],
     queryFn: async () => {
@@ -51,7 +51,7 @@ export default function CommunityPage() {
     },
   });
 
-  // Fetch user's likes
+  
   const { data: userLikes } = useQuery({
     queryKey: ["user-likes", user?.id],
     queryFn: async () => {
@@ -67,7 +67,7 @@ export default function CommunityPage() {
 
   const likedPostIds = new Set(userLikes ?? []);
 
-  // Create post
+  
   const createPost = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not auth");
@@ -85,7 +85,7 @@ export default function CommunityPage() {
     },
   });
 
-  // Toggle like
+  
   const toggleLike = useMutation({
     mutationFn: async (postId: string) => {
       if (!user) throw new Error("Not auth");
@@ -109,7 +109,7 @@ export default function CommunityPage() {
     },
   });
 
-  // Featured posts
+  
   const featuredPosts = posts?.filter((p) => p.is_featured).slice(0, 3) ?? [];
   const regularPosts = posts?.filter((p) => !p.is_featured) ?? [];
 

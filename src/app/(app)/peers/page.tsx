@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useState } from "react";
@@ -97,7 +97,7 @@ export default function PeersPage() {
     message: string;
   } | null>(null);
 
-  // Fetch peer connections
+  
   const { data: connections } = useQuery<any[]>({
     queryKey: ["peer-connections", user?.id],
     queryFn: async () => {
@@ -116,7 +116,7 @@ export default function PeersPage() {
     enabled: !!user,
   });
 
-  // Invite mutation
+  
   const invitePeer = useMutation({
     mutationFn: async (email: string) => {
       setInviteStatus(null);
@@ -146,12 +146,12 @@ export default function PeersPage() {
       (c) => c.status === "pending" && c.user_id === user?.id
     ) ?? [];
 
-  // Get all accepted peer IDs
+  
   const peerIds = acceptedConnections.map((conn: any) => {
     return conn.user_id === user?.id ? conn.peer_id : conn.user_id;
   });
 
-  // Fetch peer progress data
+  
   const { data: peerProgressMap } = useQuery({
     queryKey: ["peer-progress", peerIds],
     queryFn: async () => {
@@ -159,13 +159,13 @@ export default function PeersPage() {
 
       const progressMap: Record<string, PeerProgress> = {};
 
-      // Define the expected shape of the stats returned by the RPC
+      
       type ReadingStats = {
         total_pages_read: number;
         current_streak: number;
       };
 
-      // Fetch reading stats for all peers
+      
       const statsPromises = peerIds.map((peerId: string) =>
         supabase.rpc("get_user_reading_stats", {
           p_user_id: peerId,
@@ -173,7 +173,7 @@ export default function PeersPage() {
         } as any) as unknown as Promise<any>
       );
 
-      // Fetch quran goals for all peers
+      
       const { data: goals } = await supabase
         .from("quran_goals")
         .select("user_id, total_pages")
@@ -181,7 +181,7 @@ export default function PeersPage() {
         .eq("ramadan_year", ramadan.year)
         .eq("is_active", true);
 
-      // Fetch challenge completion counts
+      
       const { data: completions } = await supabase
         .from("user_challenge_completions")
         .select("user_id")
@@ -210,7 +210,7 @@ export default function PeersPage() {
     enabled: peerIds.length > 0,
   });
 
-  // Accept/decline mutation
+  
   const updateConnection = useMutation({
     mutationFn: async ({
       id,
@@ -339,7 +339,6 @@ export default function PeersPage() {
         </div>
       )}
 
-      {/* Active peers */}
       {acceptedConnections.length > 0 ? (
         <div>
           <h2 className="text-sm font-semibold text-muted uppercase tracking-wider mb-3">

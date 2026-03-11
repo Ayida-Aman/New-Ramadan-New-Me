@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { createClient } from "@/lib/supabase/server";
 import { getRamadanInfo, getGreeting } from "@/lib/ramadan";
 import { redirect } from "next/navigation";
@@ -17,14 +18,14 @@ export default async function DashboardPage() {
 
   const ramadan = getRamadanInfo();
 
-  // Fetch profile
+  
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single();
 
-  // Fetch active quran goal
+  
   const { data: goal } = await supabase
     .from("quran_goals")
     .select("*")
@@ -32,7 +33,7 @@ export default async function DashboardPage() {
     .eq("is_active", true)
     .maybeSingle();
 
-  // Fetch today's reading log
+  
   const today = new Date().toISOString().split("T")[0];
   const { data: todayLog } = goal
     ? await supabase
@@ -44,13 +45,13 @@ export default async function DashboardPage() {
         .maybeSingle()
     : { data: null };
 
-  // Fetch reading stats
+  
   const { data: stats } = await supabase.rpc("get_user_reading_stats", {
     p_user_id: user.id,
     p_year: ramadan.year,
   } as any);
 
-  // Fetch today's challenge
+  
   const dayNumber = ramadan.currentDay ?? 1;
   const { data: todayChallenge } = await supabase
     .from("daily_challenges")
@@ -58,7 +59,7 @@ export default async function DashboardPage() {
     .eq("day_number", dayNumber)
     .maybeSingle();
 
-  // Check if challenge completed
+  
   const { data: challengeCompletion } = todayChallenge
     ? await supabase
         .from("user_challenge_completions")
@@ -68,7 +69,7 @@ export default async function DashboardPage() {
         .maybeSingle()
     : { data: null };
 
-  // Fetch current weekly theme
+  
   const weekNumber = ramadan.weekNumber;
   const { data: weeklyTheme } = await supabase
     .from("weekly_themes")
@@ -76,7 +77,7 @@ export default async function DashboardPage() {
     .eq("week_number", weekNumber)
     .maybeSingle();
 
-  // Fetch peer connection
+  
   const { data: peerConnectionRaw } = await supabase
     .from("peer_connections")
     .select("*, peer:profiles!peer_connections_peer_id_fkey(display_name, avatar_url)")
@@ -84,7 +85,7 @@ export default async function DashboardPage() {
     .eq("status", "accepted")
     .maybeSingle();
 
-  // Fix peer property if it's an error
+  
   let peerConnection = peerConnectionRaw;
   if (
     peerConnection &&
@@ -98,7 +99,7 @@ export default async function DashboardPage() {
 
   const greeting = getGreeting();
 
-  // Fetch all badges and the user's earned badge ids
+  
   const { data: badges } = await supabase.from("badges").select("*");
 
   const { data: userBadgeRows } = await supabase

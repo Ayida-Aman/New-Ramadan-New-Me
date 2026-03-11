@@ -15,7 +15,7 @@ export async function invitePeerByEmail(email: string) {
     return { error: "Not authenticated" };
   }
 
-  // Use admin client to look up user by email
+  
   const admin = createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -45,6 +45,7 @@ export async function invitePeerByEmail(email: string) {
     user_id: user.id,
     peer_id: peerUser.id,
     ramadan_year: ramadan.year,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
 
   if (error) {

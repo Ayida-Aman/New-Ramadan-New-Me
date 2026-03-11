@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -39,7 +40,7 @@ export default function JournalPage() {
 
   const prompt = PROMPTS_BY_WEEK[ramadan.weekNumber] ?? PROMPTS_BY_WEEK[1];
 
-  // Fetch all reflections
+  
   const { data: reflections } = useQuery({
     queryKey: ["reflections", user?.id],
     queryFn: async () => {
@@ -76,7 +77,7 @@ export default function JournalPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reflections", user?.id] });
-      // Reset form
+      
       setContent("");
       setMood(null);
     },

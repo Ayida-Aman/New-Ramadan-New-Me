@@ -54,7 +54,6 @@ const features = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background islamic-pattern">
-      {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -80,7 +79,6 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-gold/10 text-gold-dark dark:text-gold px-4 py-1.5 rounded-full text-sm font-medium mb-8">
@@ -115,7 +113,6 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Stats preview */}
           <div className="mt-16 grid grid-cols-3 gap-6 max-w-lg mx-auto">
             {[
               { value: "604", label: "Pages to complete" },
@@ -135,7 +132,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Grid */}
       <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -169,7 +165,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Weekly Themes Preview */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-navy/[0.03] dark:bg-card/50">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
@@ -225,7 +220,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto text-center">
           <Moon className="h-12 w-12 text-gold mx-auto mb-6 animate-float" />
@@ -262,7 +256,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer is now shared via the root layout */}
     </div>
   );
 }
